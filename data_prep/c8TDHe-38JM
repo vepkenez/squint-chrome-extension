@@ -1,1 +1,43 @@
-
+{"sentences": [
+                    {
+                        "text": "uh mr jordan for five minutes uh thank",
+                        "start": 0.00,
+                        "end": 2.00,
+                        "start_ai": 0.03,
+                        "end_ai": 5.069,
+                        "sentence": 1,
+                        "paragraph": 1,
+                        "start_char_index": 0,
+                        "end_char_index": 0,
+                        "total_char_count": 35
+                    },
+                    {
+                        "text": "you mr chairman mr uh pachai is google",
+                        "start": 2.00,
+                        "end": 5.000,
+                        "start_ai": 2.37,
+                        "end_ai": 7.259,
+                        "sentence": 2,
+                        "paragraph": 1,
+                        "start_char_index": 0,
+                        "end_char_index": 0,
+                        "total_char_count": 38
+                    },
+                    {
+                        "text": "going to tailor its features to help joe",
+                        "start": 5.00,
+                        "end": 7.000,
+                        "start_ai": 2.37,
+                        "end_ai": 7.259,
+                        "sentence": 2,
+                        "paragraph": 1,
+                        "start_char_index": 0,
+                        "end_char_index": 0,
+                        "total_char_count": 38,
+                        "news":{
+                           "title":"something",
+                           "url": "https://nytimes.com"
+                        }
+                    },
+               ]
+}
