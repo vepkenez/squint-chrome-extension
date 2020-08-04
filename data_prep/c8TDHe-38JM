@@ -35,8 +35,10 @@
                         "end_char_index": 0,
                         "total_char_count": 38,
                         "news":{
-                           "title":"something",
-                           "url": "https://nytimes.com"
+                           "tailor its features": {
+                               "title":"something",
+                               "url": "https://nytimes.com"
+                           }
                         }
                     }
                ]
