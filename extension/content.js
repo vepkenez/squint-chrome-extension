@@ -1,8 +1,9 @@
 $('body').append('<div id="squintbox"><div class="sq-close">❌</div><div class="sq-open">⬅️</div><div class="sq-container><div class="sq-el-title">Transcript</div><div id="sq-transcript"></div><div id="sq-news"></div></div></div>')
 
 const state = {
-  activeVideo: null,
-  squintVideo: null
+  activeVideo: undefined,
+  squintVideo: null,
+  lookups:{},
 }
 
 class CurrentFrame {
@@ -17,26 +18,34 @@ class CurrentFrame {
   }
 }
 
-class VideoData {
-  constructor () {
-    this.lookup = MockData.reduce((obj, x) => {
-      obj[x.videoId] = x
-      return obj
-    }, {})
-  }
+// class VideoData {
+//   constructor () {
+//     this.lookup = MockData.reduce((obj, x) => {
+//       obj[x.videoId] = x
+//       return obj
+//     }, {})
+//   }
+// }
+
+
+
+function colorWords (selector, replaceWords) {
+    let words = selector.text()
+    words = words.replace(replaceWords, `<strong>${replaceWords}</strong>`)
+    console.log(words)
+    selector.html(words)
 }
 
-const Vids = new VideoData()
-
 class Video {
-  constructor (videodata) {
-    this.data = videodata.sentenceWise[0]
-    this.id = videodata.videoId
+  constructor (id, sentences) {
+    this.sentences = sentences
+    this.id = id
   }
 
   present (frame) {
+    let replaceWords = null
     $('#sq-transcript').empty()
-    const beforeNow = this.data.sentences.filter((e) => {
+    const beforeNow = this.sentences.filter((e) => {
       return e.end + 2 > frame.currentTime && e.start - 2 < frame.currentTime
     })
     if (beforeNow.length) {
@@ -44,34 +53,49 @@ class Video {
       const texts = beforeNow.map((e) => {
         const $textel = $(`<span class="streamingtext${i}">${e.text} </span>`)
         i++;
-        if (e.news && $textel.find('strong').length) {
-          const key = $textel.find('strong').text()
-          const id= key.replace(' ', '-')
-          if (!$('#sq-news').find(`#${id}`).length) {
-            const $el = $(`<div id="${id}" class="sq-newsbox"></>`)
-            $el.append(`<div class="sq-newstitle">${e.news[key].title}</div>`)
-            $el.append(`<a class="sq-newslink" href="${e.news[key].url}">${e.news[key].url}</a>`)
-            $el.append('<button>promote</button>')
-            $('#sq-news').prepend($el)
-          }
+        if (e.news) {
+          Object.keys(e.news).forEach((key) => {
+            const id= key.replace(/ /g, '-')
+            if (!$('#sq-news').find(`#${id}`).length) {
+              const $el = $(`<div id="${id}" class="sq-newsbox"></>`)
+              $el.append(`<div class="sq-newstitle">${e.news[key].title}</div>`)
+              $el.append(`<a class="sq-newslink" href="${e.news[key].url}">${e.news[key].url}</a>`)
+              $el.append('<button>promote</button>')
+              $('#sq-news').prepend($el)
+            }
+            replaceWords = key
+          })
         }
         return $textel
       })
       $('#sq-transcript').append(texts)
+      if (replaceWords) {
+        colorWords($('.streamingtext0'), replaceWords)
+        colorWords($('.streamingtext1'), replaceWords)
+        colorWords($('.streamingtext2'), replaceWords)
+      }
     }
   }
 }
 
 $(document).on('squint:videoChanged', (e, videoData) => {
-  if (Vids.lookup[videoData.id]) {
-    state.squintVideo = new Video(Vids.lookup[videoData.id])
+  if (state.lookups[videoData.id] && state.lookups[videoData.id].sentences) {
+    state.squintVideo = new Video(videoData.id, state.lookups[videoData.id].sentences)
+  } else {
+    $.getJSON(`https://raw.githubusercontent.com/vepkenez/squint-chrome-extension/master/data_prep/${videoData.id}`, function (resp, something) {
+      state.lookups[videoData.id] = resp
+    }).fail(function () {
+      state.lookups[videoData.id] = true
+      state.activeVideo = videoData.id
+      state.squintVideo = null
+    })
   }
 })
 
 // youtube playback events
 $('video').on('timeupdate', (e) => {
   const frame = new CurrentFrame(e)
-  if (!state.activeVideo || frame.id !== state.activeVideo.id) {
+  if (state.activeVideo === undefined || (state.activeVideo && frame.id !== state.activeVideo)) {
     $(document).trigger('squint:videoChanged', frame)
   }
   if (state.squintVideo) {
